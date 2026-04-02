@@ -7,10 +7,10 @@ type WpPost = {
   content: { rendered: string; protected?: boolean }
 }
 
-function joinUrl(base: string, path: string) {
-  const normalizedBase = base.replace(/\/+$/, '')
-  const normalizedPath = path.replace(/^\/+/, '')
-  return `${normalizedBase}/${normalizedPath}`
+type WpMenuItem = {
+  id: number
+  title: string
+  url: string
 }
 
 export function useWp() {
@@ -19,37 +19,33 @@ export function useWp() {
 
   const isConfigured = computed(() => wpBaseUrl.length > 0)
 
-  async function wpFetch<T>(path: string, options?: Parameters<typeof $fetch<T>>[1]) {
+  async function apiFetch<T>(path: string, options?: Parameters<typeof $fetch<T>>[1]) {
     if (!wpBaseUrl) {
       throw new Error('WP_BASE_URL_NOT_CONFIGURED')
     }
 
-    return await $fetch<T>(joinUrl(wpBaseUrl, path), {
-      ...options,
-      headers: {
-        Accept: 'application/json',
-        ...(options?.headers || {})
-      }
-    })
+    return await $fetch<T>(path, options)
   }
 
   async function getPosts(params?: { perPage?: number }) {
     const perPage = params?.perPage ?? 10
-    const query = new URLSearchParams({ per_page: String(perPage) })
-    return await wpFetch<WpPost[]>(`/wp-json/wp/v2/posts?${query.toString()}`)
+    return await apiFetch<WpPost[]>('/api/wp/posts', { query: { perPage } })
   }
 
   async function getPostBySlug(slug: string) {
-    const query = new URLSearchParams({ slug })
-    const result = await wpFetch<WpPost[]>(`/wp-json/wp/v2/posts?${query.toString()}`)
-    return result[0] ?? null
+    return await apiFetch<WpPost | null>(`/api/wp/posts/${encodeURIComponent(slug)}`)
+  }
+
+  async function getMenu(params: { id: number }) {
+    return await apiFetch<WpMenuItem[]>(`/api/wp/menus/${params.id}`)
   }
 
   return {
     isConfigured,
     getPosts,
-    getPostBySlug
+    getPostBySlug,
+    getMenu
   }
 }
 
-export type { WpPost }
+export type { WpMenuItem, WpPost }

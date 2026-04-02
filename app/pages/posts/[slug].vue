@@ -1,21 +1,21 @@
 <template>
-  <main style="max-width: 900px; margin: 0 auto; padding: 24px">
-    <header style="display: flex; gap: 12px; align-items: baseline">
+  <main class="max-w-[900px] mx-auto p-6">
+    <header class="flex gap-3 items-baseline">
       <NuxtLink to="/">← Back</NuxtLink>
-      <h1 style="margin: 0" v-html="post?.title.rendered" />
+      <h1 class="m-0" v-html="post?.title.rendered" />
     </header>
 
-    <section v-if="!isConfigured" style="margin-top: 20px; padding: 12px; border: 1px solid #ddd">
-      <p style="margin: 0 0 8px">Set the WordPress base URL to fetch the post.</p>
-      <pre style="margin: 0; white-space: pre-wrap">runtimeConfig.public.wpBaseUrl = 'https://your-wp-site.com'</pre>
+    <section v-if="!isConfigured" class="mt-5 p-3 border border-gray-300 rounded">
+      <p class="mb-2">Set the WordPress base URL to fetch the post.</p>
+      <pre class="whitespace-pre-wrap m-0">runtimeConfig.public.wpBaseUrl = 'https://your-wp-site.com'</pre>
     </section>
 
-    <section v-else style="margin-top: 20px">
-      <p v-if="pending" style="margin: 0">Loading…</p>
-      <p v-else-if="error" style="margin: 0">Error: {{ errorMessage }}</p>
-      <p v-else-if="!post" style="margin: 0">Post not found.</p>
+    <section v-else class="mt-5">
+      <p v-if="pending" class="m-0">Loading…</p>
+      <p v-else-if="error" class="m-0">Error: {{ errorMessage }}</p>
+      <p v-else-if="!post" class="m-0">Post not found.</p>
       <article v-else>
-        <div style="opacity: 0.75; font-size: 14px; margin-bottom: 12px">
+        <div class="opacity-75 text-sm mb-3">
           {{ new Date(post.date).toLocaleString() }}
         </div>
         <div v-html="post.content.rendered" />

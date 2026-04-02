@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@layer base {
+  @font-face {
+    font-family: "Font Awesome 6 Brands";
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: url("/fonts/fa-brands-400.woff2") format("woff2"),
+      url("/fonts/fa-brands-400.ttf") format("truetype");
+  }
+
+  @font-face {
+    font-family: "Neue Haas Display";
+    font-style: normal;
+    font-weight: 100;
+    font-display: swap;
+    src: url("/fonts/NeueHaasDisplay-XThin.woff2") format("woff2"),
+      url("/fonts/NeueHaasDisplay-XThin.woff") format("woff");
+  }
+
+  @font-face {
+    font-family: "Neue Haas Display";
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: url("/fonts/NeueHaasDisplay-Light.woff2") format("woff2"),
+      url("/fonts/NeueHaasDisplay-Light.woff") format("woff");
+  }
+
+  @font-face {
+    font-family: "Neue Haas Display";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("/fonts/NeueHaasDisplay-Roman.woff2") format("woff2"),
+      url("/fonts/NeueHaasDisplay-Roman.woff") format("woff");
+  }
+
+  @font-face {
+    font-family: "Neue Haas Display";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("/fonts/NeueHaasDisplay-Bold.woff2") format("woff2"),
+      url("/fonts/NeueHaasDisplay-Bold.woff") format("woff");
+  }
+
+  .fa-brands {
+    font-family: "Font Awesome 6 Brands";
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1;
+    display: inline-block;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .fa-brands::before {
+    display: inline-block;
+  }
+
+  .fa-linkedin-in::before {
+    content: "\f0e1";
+  }
+
+  .fa-instagram::before {
+    content: "\f16d";
+  }
+
+  body {
+    @apply bg-[#1E1D1D];
+    @apply text-white;
+    font-family: "Neue Haas Display";
+  }
+}
