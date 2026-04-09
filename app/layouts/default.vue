@@ -73,22 +73,25 @@
           </div>
           <div class="md:flex-1">
             <ul>
-              <li><NuxtLink to="/" class="text-base">FAQs</NuxtLink></li>
-              <li><NuxtLink to="/" class="text-base">Cookies Policy</NuxtLink></li>
-              <li><NuxtLink to="/" class="text-base">Privacy Policy</NuxtLink></li>
+              <li v-for="item in footerMenu" :key="item.key">
+                <component
+                  :is="item.isExternal ? 'a' : NuxtLink"
+                  :href="item.isExternal ? item.href : undefined"
+                  :to="item.isExternal ? undefined : item.href"
+                  :target="item.isExternal ? '_blank' : undefined"
+                  :rel="item.isExternal ? 'noreferrer' : undefined"
+                  class="text-base"
+                >
+                  {{ item.label }}
+                </component>
+              </li>
             </ul>
-            <div class="flex gap-3 justify-center pt-5">
-              <a href="#" aria-label="LinkedIn" class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-white/20">
-                <i class="fa-brands fa-linkedin-in"></i>
-              </a>
-              <a href="#" aria-label="Instagram" class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-white/20">
-                <i class="fa-brands fa-instagram"></i>
+            <div class="flex gap-3 justify-center pt-5" v-if="social_links.length">
+              <a v-for="l in social_links" :key="l.key" :href="l.url" :target="l.target" class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-white/20">
+                <i :class="l.icon"></i>
               </a>
             </div>
-            <p class="text-xs leading-5 pt-5">
-              All copyrights reserved © {{ year }} EBM <br />
-              Designed by Creative Affairs
-            </p>
+            <p v-if="copyrights" class="text-xs leading-5 pt-5" v-html="copyrights"></p>
           </div>
           <div class="md:flex-1">
             <h4 class="text-xs mb-5">Recognition:</h4>
@@ -119,7 +122,17 @@
     }
   }
 
+  async function fetchFooterMenu() {
+    try {
+      return await getMenu({ id: 41 }) 
+    } catch {
+      return [] 
+    }
+  }
+
   const { data: wpMenu } = await useAsyncData('wp-menu-40', fetchHeaderMenu)
+
+  const { data: wpFooterMenu } = await useAsyncData('wp-menu-41', fetchFooterMenu)
 
   async function fetchGlobalSettings() {
     try {
@@ -181,8 +194,58 @@
       })
   })
 
+  const social_links = computed(() => {
+    const raw = (wpGlobal.value as any)?.social_links
+
+    if (!Array.isArray(raw)) return []
+
+    return raw.flatMap((row: any) => {
+        const link = row?.link ?? row
+        if (!link) return []
+
+        const title = String(link?.title ?? '').trim()
+        const url = String(link?.url ?? '').trim()
+        const target = String(link?.target ?? '').trim()
+        const icon = String(row?.icon ?? '').trim()
+
+        if (!url) return []
+
+        return [
+          {
+            key: `${url}`,
+            title,
+            url,
+            icon,
+            target: target || undefined
+          }
+        ]
+      })
+  })
+
+  const copyrights = computed(() => {
+    const raw = (wpGlobal.value as any)?.copyrights ?? null
+    if (raw) {
+      return raw
+    }
+    return ''
+  })
+
   const headerMenu = computed(() => {
     const items = wpMenu.value ?? []
+    return items.map((item, index) => {
+      const href = item.url.trim()
+      const isExternal = /^https?:\/\//.test(href)
+      return {
+        key: `${item.id || index}-${href}`,
+        label: item.title,
+        href,
+        isExternal
+      }
+    })
+  })
+
+  const footerMenu = computed(() => {
+    const items = wpFooterMenu.value ?? []
     return items.map((item, index) => {
       const href = item.url.trim()
       const isExternal = /^https?:\/\//.test(href)
