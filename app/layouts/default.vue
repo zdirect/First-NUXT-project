@@ -94,10 +94,9 @@
             <p v-if="copyrights" class="text-xs leading-5 pt-5" v-html="copyrights"></p>
           </div>
           <div class="md:flex-1">
-            <h4 class="text-xs mb-5">Recognition:</h4>
+            <h4 class="text-xs mb-5" v-if="partner_title">{{ partner_title }}</h4>
             <div class="flex justify-center flex-col items-center">
-              <img src="/images/riba-logo-png-transparent.svg" alt="" class="mb-5 max-w-[100px]" />
-              <img src="/images/bda-landscape-logo-600.svg" alt="" class="mb-5 max-w-[100px]" />
+              <img v-for="logo in partner_logo" :key="logo" :src="logo" alt="" class="mb-5 max-w-[100px]" />
             </div>
           </div>
         </div>
@@ -228,6 +227,26 @@
       return raw
     }
     return ''
+  })
+
+  const partner_title = computed(() => {
+    const raw = (wpGlobal.value as any)?.partner_title ?? null
+    if (raw) {
+      return raw
+    }
+    return ''
+  })
+
+  const partner_logo = computed(() => {
+    const raw = (wpGlobal.value as any)?.partners_logo ?? null
+
+     if (!Array.isArray(raw)) return []
+
+    return raw.map((row: any) => {
+      const logo = String(row?.logo?.url ?? '').trim()
+      if (!logo) return ''
+      return logo
+    })
   })
 
   const headerMenu = computed(() => {
