@@ -20,7 +20,7 @@
                   class="group relative px-1 py-1"
                 >
                   {{ item.label }}
-                  <span class="absolute left-1/2 -bottom-1 h-[1px] w-0 bg-white transition-all duration-300 group-hover:w-full group-hover:left-0"></span>
+                  <span class="absolute left-1/2 -bottom-1 h-px w-0 bg-white transition-all duration-300 group-hover:w-full group-hover:left-0"></span>
                 </component>
               </li>
               <li class="relative">
@@ -29,7 +29,7 @@
                   class="group relative px-1 py-1 after:content-[url('/images/search-icon.svg')] after:absolute after:top-[7px] after:translate-y-[-50%] after:right-[-19px] after:w-[13px] after:h-[13px] hover:after:opacity-100 after:transition-opacity after:duration-300"
                 >
                   Search
-                  <span class="absolute left-1/2 -bottom-1 h-[1px] w-0 bg-white transition-all duration-300 group-hover:w-full group-hover:left-0"></span>
+                  <span class="absolute left-1/2 -bottom-1 h-px w-0 bg-white transition-all duration-300 group-hover:w-full group-hover:left-0"></span>
                 </NuxtLink>
               </li>
             </ul>
@@ -108,8 +108,6 @@
 <script setup lang="ts">
   import { NuxtLink } from '#components'
   import type { WpGlobalSettings } from '~/composables/useWp'
-
-  const year = new Date().getFullYear()
 
   const { getGlobalSettings, getMenu } = useWp()
 

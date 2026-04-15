@@ -7,6 +7,16 @@ type WpPost = {
   content: { rendered: string; protected?: boolean }
 }
 
+type WpPage = {
+  id: number
+  slug: string
+  date: string
+  title: { rendered: string }
+  content: { rendered: string; protected?: boolean }
+  acf?: Record<string, unknown>
+  section?: unknown
+}
+
 type WpMenuItem = {
   id: number
   title: string
@@ -46,6 +56,10 @@ export function useWp() {
     return await apiFetch<WpPost | null>(`/api/wp/posts/${encodeURIComponent(slug)}`)
   }
 
+  async function getPageBySlug(slug: string) {
+    return await apiFetch<WpPage | null>(`/api/wp/pages/${encodeURIComponent(slug)}`)
+  }
+
   /**
    * Get a menu by ID.
    */
@@ -64,9 +78,10 @@ export function useWp() {
     isConfigured,
     getPosts,
     getPostBySlug,
+    getPageBySlug,
     getMenu,
     getGlobalSettings
   }
 }
 
-export type { WpGlobalSettings, WpMenuItem, WpPost }
+export type { WpGlobalSettings, WpMenuItem, WpPage, WpPost }

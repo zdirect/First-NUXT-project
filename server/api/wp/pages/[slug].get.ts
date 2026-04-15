@@ -1,0 +1,38 @@
+import { Buffer } from 'buffer'
+import { createError, getRouterParam } from 'h3'
+
+function joinUrl(base: string, path: string) {
+  const normalizedBase = base.replace(/\/+$/, '')
+  const normalizedPath = path.replace(/^\/+/, '')
+  return `${normalizedBase}/${normalizedPath}`
+}
+
+export default defineEventHandler(async (event) => {
+  const config = useRuntimeConfig(event)
+  const wpBaseUrl = String(config.public.wpBaseUrl || '').trim()
+
+  if (!wpBaseUrl) {
+    throw createError({ statusCode: 500, statusMessage: 'WP_BASE_URL_NOT_CONFIGURED' })
+  }
+
+  const slug = String(getRouterParam(event, 'slug') || '').trim()
+  if (!slug) {
+    throw createError({ statusCode: 400, statusMessage: 'SLUG_REQUIRED' })
+  }
+
+  const headers: Record<string, string> = { Accept: 'application/json' }
+  const user = String(config.wpBasicAuthUser || '').trim()
+  const pass = String(config.wpBasicAuthPassword || '').trim()
+  if (user && pass) {
+    headers.Authorization = `Basic ${Buffer.from(`${user}:${pass}`).toString('base64')}`
+  }
+
+  try {
+    return await $fetch(joinUrl(wpBaseUrl, '/wp-json/nuxt/v1/homepage'), {
+      headers,
+      query: { slug }
+    })
+  } catch {
+    throw createError({ statusCode: 502, statusMessage: 'WP_HOMEPAGE_ENDPOINT_FETCH_FAILED' })
+  }
+})
