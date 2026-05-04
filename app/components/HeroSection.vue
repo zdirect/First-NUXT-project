@@ -1,30 +1,32 @@
 <script setup lang="ts">
-type FlexibleSection = Record<string, unknown>
+import { pickImageUrl, pickString } from '~/utils/wpFields'
+
+interface FlexibleSection {
+  title?: unknown
+  text?: unknown
+  button_text?: unknown
+  cta_text?: unknown
+  button_url?: unknown
+  cta_url?: unknown
+  image?: unknown
+  [key: string]: unknown
+}
 
 const props = defineProps<{
   section: FlexibleSection
 }>()
 
-function pickString(value: unknown) {
-  return typeof value === 'string' ? value.trim() : ''
-}
-
-function pickImageUrl(value: unknown) {
-  if (!value || typeof value !== 'object') return ''
-  const maybeObject = value as Record<string, unknown>
-  return pickString(maybeObject.url)
-}
-
 const heading = computed(() => (
-  pickString(props.section.heading)
-  || pickString(props.section.title)
+  pickString(props.section.title)
   || 'Hero Section'
+))
+
+const cleanHeading = computed(() => (
+  heading.value.replace(/<\/?[^>]+(>|$)/g, '')
 ))
 
 const text = computed(() => (
   pickString(props.section.text)
-  || pickString(props.section.description)
-  || pickString(props.section.subtitle)
 ))
 
 const ctaText = computed(() => (
@@ -40,20 +42,19 @@ const ctaUrl = computed(() => (
 ))
 
 const backgroundImage = computed(() => (
-  pickString(props.section.background_image_url)
-  || pickImageUrl(props.section.background_image)
-  || pickImageUrl(props.section.image)
+  pickImageUrl(props.section.image)
 ))
 </script>
 
 <template>
   <section class="relative w-full min-h-[70vh] flex items-center justify-center text-white">
-    <img
+    <NuxtImg
       v-if="backgroundImage"
       :src="backgroundImage"
-      :alt="heading"
+      :alt="cleanHeading"
+      sizes="100vw"
       class="absolute inset-0 w-full h-full object-cover"
-    >
+    />
     <div class="absolute inset-0 bg-black/45" />
 
     <div class="relative z-10 container mx-auto px-6 text-center lg:text-left">

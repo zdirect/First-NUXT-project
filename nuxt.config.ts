@@ -8,6 +8,7 @@ export default defineNuxtConfig({
       autoprefixer: {}
     }
   },
+  modules: ['@nuxt/image'],
 
   runtimeConfig: {
     wpBasicAuthUser: '',

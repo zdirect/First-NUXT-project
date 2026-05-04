@@ -2,30 +2,18 @@
 import { Autoplay } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css'
+import type { Component } from 'vue'
 
 import type { WpPage } from '~/composables/useWp'
-
-const heroSlides = [
-  {
-    type: 'image',
-    desktopSrc: '/images/img-hero-banner-01.webp',
-    mobileSrc: '/images/img-hero-banner-01.webp',
-    alt: 'Hero banner slide 1'
-  },
-  {
-    type: 'image',
-    desktopSrc: '/images/img-hero-banner-01.webp',
-    mobileSrc: '/images/img-hero-banner-01.webp',
-    alt: 'Hero banner slide 2'
-  },
-  {
-    type: 'video',
-    src: '/videos/video-hero-banner-01.mp4'
-  }
-] as const
+import HeroSection from '~/components/HeroSection.vue'
+import TextSection from '~/components/TextSection.vue'
 
 type AcfFlexibleItem = Record<string, unknown> & { acf_fc_layout?: string }
-type SectionComponent = 'HeroSection' | null
+
+const sectionComponentByLayout: Record<string, Component> = {
+  hero: HeroSection,
+  text: TextSection,
+}
 
 const homePageSlug = 'home'
 const { isConfigured, getPageBySlug } = useWp()
@@ -53,13 +41,24 @@ function getLayoutName(section: AcfFlexibleItem) {
     : 'unknown'
 }
 
-function getSectionComponent(section: AcfFlexibleItem): SectionComponent {
-  const normalizedLayout = getLayoutName(section).toLowerCase().replace(/-/g, '_')
-  if (normalizedLayout === 'hero_section' || normalizedLayout === 'hero') {
-    return 'HeroSection'
-  }
-  return null
+function normalizeLayoutName(layoutName: string) {
+  return layoutName.toLowerCase().replace(/-/g, '_')
 }
+
+const resolvedSections = computed(() => (
+  sections.value.map((section, index) => {
+    const rawLayout = getLayoutName(section)
+    const normalizedLayout = normalizeLayoutName(rawLayout)
+    const component = sectionComponentByLayout[normalizedLayout] ?? null
+    return {
+      key: `${normalizedLayout}-${index}`,
+      section,
+      rawLayout,
+      normalizedLayout,
+      component
+    } as const
+  })
+))
 </script>
 <template>
   <section v-if="!isConfigured" class="mt-5 p-3 border border-gray-300 rounded max-w-[900px] mx-auto">
@@ -71,23 +70,20 @@ function getSectionComponent(section: AcfFlexibleItem): SectionComponent {
   <section v-else-if="error" class="max-w-[900px] mx-auto p-6">Error: {{ errorMessage }}</section>
 
   <template v-else-if="sections.length">
-    <section
-      v-for="(section, index) in sections"
-      :key="`${getLayoutName(section)}-${index}`"
-      class="py-10"
-    >
+    <template v-for="item in resolvedSections" :key="item.key">
       <component
-        :is="getSectionComponent(section) || 'div'"
-        v-bind="getSectionComponent(section) ? { section } : {}"
-      >
-        <template v-if="!getSectionComponent(section)">
-          <div class="container mx-auto">
-            <div class="text-sm opacity-75 mb-3">Section: {{ getLayoutName(section) }}</div>
-            <pre class="text-xs whitespace-pre-wrap leading-relaxed">{{ JSON.stringify(section, null, 2) }}</pre>
-          </div>
-        </template>
-      </component>
-    </section>
+        v-if="item.component"
+        :is="item.component"
+        :section="item.section"
+      />
+
+      <section v-else class="py-10">
+        <div class="container mx-auto">
+          <div class="text-sm opacity-75 mb-3">Section: {{ item.rawLayout }}</div>
+          <pre class="text-xs whitespace-pre-wrap leading-relaxed">{{ JSON.stringify(item.section, null, 2) }}</pre>
+        </div>
+      </section>
+    </template>
   </template>
 
   <template v-else>
@@ -115,10 +111,11 @@ function getSectionComponent(section: AcfFlexibleItem): SectionComponent {
             <template v-if="slide.type === 'image'">
               <picture>
                 <source media="(max-width: 991px)" :srcset="slide.mobileSrc" />
-                <img
+                <NuxtImg
                   :src="slide.desktopSrc"
                   loading="lazy"
                   :alt="slide.alt"
+                  sizes="100vw"
                   class="w-full h-full object-cover"
                 />
               </picture>
@@ -151,10 +148,10 @@ function getSectionComponent(section: AcfFlexibleItem): SectionComponent {
     <div class="w-full">
       <div class="grid grid-cols-2 gap-[60px] items-stretch">
         <div class="rounded-lg overflow-hidden">
-          <img src="/images/image-column-1.jpg" alt="" class="w-full h-full object-cover">
+          <NuxtImg src="/images/image-column-1.jpg" sizes="100vw md:50vw" alt="" class="w-full h-full object-cover" />
         </div>
         <div class="rounded-lg overflow-hidden">
-          <img src="/images/image-column-2.jpg" alt="" class="w-full h-full object-cover">
+          <NuxtImg src="/images/image-column-2.jpg" sizes="100vw md:50vw" alt="" class="w-full h-full object-cover" />
         </div>
       </div>
     </div>
