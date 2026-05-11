@@ -72,4 +72,5 @@ const backgroundImage = computed(() => (
       </a>
     </div>
   </section>
+
 </template>

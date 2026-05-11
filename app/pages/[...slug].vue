@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { Autoplay } from 'swiper/modules'
-import { Swiper, SwiperSlide } from 'swiper/vue'
-import 'swiper/css'
 import type { Component } from 'vue'
 
 import type { WpPage } from '~/composables/useWp'
@@ -18,23 +15,32 @@ const sectionComponentByLayout: Record<string, Component> = {
   text: TextSection,
   imagegrid: ImageGrid,
   partners: PartnersSection,
-  contact: ContactSection,
-  contact_section: ContactSection,
+  contact: ContactSection, // Maps to 'contact' layout in ACF
+  contact_section: ContactSection, // Alternative layout name just in case
 }
 
-const homePageSlug = 'home'
+const route = useRoute()
 const { isConfigured, getPageBySlug } = useWp()
 
-const { data, pending, error } = await useAsyncData('wp-home-page', () => getPageBySlug(homePageSlug))
+// Extract the slug from the [...slug] route parameter
+const pageSlug = computed(() => {
+  const slugParam = route.params.slug
+  if (Array.isArray(slugParam)) {
+    return slugParam[slugParam.length - 1] || '' // Typically use the last part for WP, or join them
+  }
+  return slugParam || ''
+})
 
-const homePage = computed(() => data.value as WpPage | null)
+const { data, pending, error } = await useAsyncData(`wp-page-${pageSlug.value}`, () => getPageBySlug(pageSlug.value))
+
+const pageData = computed(() => data.value as WpPage | null)
 
 // Apply SEO meta tags based on the WordPress page data
-useWpSeo(homePage)
+useWpSeo(pageData)
 
 const sections = computed(() => {
-  const rootSection = homePage.value?.section
-  const acf = homePage.value?.acf as Record<string, unknown> | undefined
+  const rootSection = pageData.value?.section
+  const acf = pageData.value?.acf as Record<string, unknown> | undefined
   const raw = Array.isArray(rootSection) ? rootSection : acf?.section
   return Array.isArray(raw) ? (raw as AcfFlexibleItem[]) : []
 })
@@ -56,11 +62,6 @@ function normalizeLayoutName(layoutName: string) {
   return layoutName.toLowerCase().replace(/-/g, '_')
 }
 
-// TODO: Replace with real data from WP when ready
-const heroSlides = [
-  { type: 'image', desktopSrc: 'https://via.placeholder.com/1920x1080', mobileSrc: 'https://via.placeholder.com/800x1080', alt: 'Placeholder' }
-]
-
 const resolvedSections = computed(() => (
   sections.value.map((section, index) => {
     const rawLayout = getLayoutName(section)
@@ -76,6 +77,7 @@ const resolvedSections = computed(() => (
   })
 ))
 </script>
+
 <template>
   <section v-if="!isConfigured" class="mt-5 p-3 border border-gray-300 rounded max-w-[900px] mx-auto">
     <p class="mb-2">Set the WordPress base URL to fetch homepage sections.</p>
@@ -84,6 +86,7 @@ const resolvedSections = computed(() => (
 
   <section v-else-if="pending" class="max-w-[900px] mx-auto p-6">Loading…</section>
   <section v-else-if="error" class="max-w-[900px] mx-auto p-6">Error: {{ errorMessage }}</section>
+  <section v-else-if="!pageData" class="max-w-[900px] mx-auto p-6">Page not found</section>
 
   <template v-else-if="sections.length">
     <template v-for="item in resolvedSections" :key="item.key">
@@ -101,5 +104,12 @@ const resolvedSections = computed(() => (
       </section>
 
     </template>
+  </template>
+  
+  <template v-else>
+    <main class="max-w-[900px] mx-auto p-6">
+      <h1 class="text-3xl font-bold mb-6">{{ pageData.title?.rendered || 'Untitled Page' }}</h1>
+      <div v-html="pageData.content?.rendered" class="prose prose-lg max-w-none"></div>
+    </main>
   </template>
 </template>

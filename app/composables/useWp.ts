@@ -5,6 +5,14 @@ type WpPost = {
   title: { rendered: string }
   excerpt: { rendered: string; protected?: boolean }
   content: { rendered: string; protected?: boolean }
+  seo?: WpSeoMeta
+}
+
+type WpSeoMeta = {
+  title?: string
+  description?: string
+  ogImage?: string
+  robots?: string
 }
 
 type WpPage = {
@@ -15,6 +23,7 @@ type WpPage = {
   content: { rendered: string; protected?: boolean }
   acf?: Record<string, unknown>
   section?: unknown
+  seo?: WpSeoMeta
 }
 
 type WpMenuItem = {
@@ -84,4 +93,4 @@ export function useWp() {
   }
 }
 
-export type { WpGlobalSettings, WpMenuItem, WpPage, WpPost }
+export type { WpGlobalSettings, WpMenuItem, WpPage, WpPost, WpSeoMeta }
